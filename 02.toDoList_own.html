@@ -1,0 +1,123 @@
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title></title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="./css/index.css">
+    <script type="text/javascript" src="./lib/vue.js"></script>
+
+</head>
+
+<body>
+    <section class="todoapp">
+        <header class="header">
+            <h1>任务清单</h1>
+            <!-- 顶部输入框 -->
+            <input autofocus="autofocus" @keyup.enter="addTodo" v-model.trim="inputValue" autocomplete="off" placeholder="想干啥?" class="new-todo">
+        </header>
+        <section class="main">
+            <!-- 全选 -->
+            <input type="checkbox" class="toggle-all">
+            <ul class="todo-list">
+                <!-- 循环生成li 标签 -->
+                <li class="todo " v-for="(item,index) in todoList">
+                    <div class="view">
+                        <input type="checkbox" class="toggle">
+                        <label>{{item.content}}</label>
+                        <button class="destroy"></button>
+                    </div>
+                    <input type="text" class="edit">
+                </li>
+
+                <!-- 下面是模板 -->
+                <li class="todo ">
+                    <div class="view">
+                        <input type="checkbox" class="toggle">
+                        <label>21</label>
+                        <button class="destroy"></button>
+                    </div>
+                    <input type="text" class="edit">
+                </li>
+                <li class="todo completed">
+                    <div class="view">
+                        <input type="checkbox" class="toggle">
+                        <label>21</label>
+                        <button class="destroy"></button>
+                    </div>
+                    <input type="text" class="edit">
+                </li>
+                <li class="todo editing">
+                    <div class="view">
+                        <input type="checkbox" class="toggle">
+                        <label>21</label>
+                        <button class="destroy"></button>
+                    </div>
+                    <input type="text" class="edit">
+                </li>
+            </ul>
+        </section>
+        <footer class="footer">
+            <span class="todo-count">
+                <strong>1</strong> 项 剩余
+            </span>
+            <ul class="filters">
+                <li>
+                    <a href="#/all" class="selected">全部</a>
+                </li>
+                <li>
+                    <a href="#/active" class="selected">未完成</a>
+                </li>
+                <li>
+                    <a href="#/completed" class="selected">完成</a>
+                </li>
+            </ul>
+            <button class="clear-completed">
+                清空列表
+            </button>
+        </footer>
+    </section>
+    <footer class="info">
+        <p>双击进入编辑状态</p>
+        <p>鸣谢:
+            <a href="http://evanyou.me">Evan You</a>
+        </p>
+        <p>参考于
+            <a href="http://todomvc.com">TodoMVC</a>
+        </p>
+    </footer>
+
+
+</body>
+
+</html>
+<script>
+    let app = new Vue({
+        el:'.todoapp',
+        data:{
+            todoList:[],
+            inputValue:''
+        },
+        methods:{
+            addTodo(){
+                if(this.inputValue == ''){
+                    alert('兄嘚，写点啥呗！');
+                    return;
+                }
+                this.todoList.push({
+                    content:this.inputValue,
+                    isCompleted:false
+                })
+                this.inputValue = '';
+            }
+        },
+        computed:{
+            
+        }
+    })
+
+</script>

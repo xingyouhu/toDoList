@@ -1,0 +1,242 @@
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title></title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="./css/index.css">
+    <script type="text/javascript" src="./lib/vue.js"></script>
+
+</head>
+
+<body>
+    <section class="todoapp">
+        <header class="header">
+            <h1>任务清单</h1>
+            <!-- 顶部输入框 -->
+            <input v-autofocus @keyup.enter="addTodo" v-model.trim="inputValue" autocomplete="off" placeholder="想干啥?" class="new-todo">
+        </header>
+        <section class="main">
+            <!-- 全选 -->
+            <input type="checkbox" class="toggle-all" @change="checkAll" v-model="isCheckAll">
+            <ul class="todo-list">
+                <!-- 循环生成li标签 -->
+                <li class="todo" :class="{completed:item.isCompleted,editing:item.isEditing}" v-for="(item,index) in filterArr">
+                    <div class="view">
+                        <!-- 单选 -->
+                        <input type="checkbox" @change="checkIsAll" class="toggle" v-model="item.isCompleted">
+                        <label @dblclick="editing(index)">{{item.content}}</label>
+                        <!-- 绑定事件 -->
+                        <button @click="delCurrent(index)" class="destroy"></button>
+                    </div>
+                    <!-- 编辑的标签 -->
+                    <input type="text" v-focus @keyup.enter="saveEdit(index)" @blur="saveEdit(index)" class="edit" v-model="item.content">
+                </li>
+            </ul>
+        </section>
+        <footer class="footer">
+            <span class="todo-count">
+                <strong>{{unfinishedNum}}</strong> 项 剩余
+            </span>
+            <ul class="filters">
+                <li>
+                    <a href="#/all" @click="changeFilter('all')" :class="{selected:filter=='all'}">全部</a>
+                </li>
+                <li>
+                    <a href="#/active" @click="changeFilter('active')" :class="{selected:filter=='active'}">未完成</a>
+                </li>
+                <li>
+                    <a href="#/completed" @click="changeFilter('completed')" :class="{selected:filter=='completed'}">完成</a>
+                </li>
+            </ul>
+            <button class="clear-completed" @click="clearTodo">
+                清空列表
+            </button>
+        </footer>
+    </section>
+    <footer class="info">
+        <p>双击进入编辑状态</p>
+        <p>鸣谢:
+            <a href="http://evanyou.me">Evan You</a>
+        </p>
+        <p>参考于
+            <a href="http://todomvc.com">TodoMVC</a>
+        </p>
+    </footer>
+</body>
+
+</html>
+<script>
+    // 注册一个全局自定义指令 `v-focus`
+    Vue.directive('focus', {
+        // 当被绑定的元素插入到 DOM 中时……
+        // inserted: function (el) {
+        //     // 聚焦元素
+        //     el.focus()
+        // },
+        update:function(el){
+            el.focus();
+        }
+    });
+    // 再注册一个自定义指令
+    Vue.directive('autofocus',{
+        // 当被绑定的元素插入到 DOM 中时……
+        inserted: function (el) {
+            // 聚焦元素
+            el.focus()
+        },
+
+    })
+
+    // 读取数据
+    let todoList = JSON.parse(window.localStorage.getItem('todo22')) || [];
+
+    // 注册页面关闭事件
+    window.onunload = function () { 
+        window.localStorage.setItem('todo22',JSON.stringify(todoList));
+    }
+
+
+
+    let app = new Vue({
+        el: '.todoapp',
+        data: {
+            // 待办事项数组
+            todoList,
+            // 双向数据绑定
+            inputValue: '',
+            // 筛选的字段
+            filter:'all',
+            // 是否全部选中
+            isCheckAll:false
+        },
+        methods: {
+            // 新增待办事项
+            addTodo() {
+                // 非空判断
+                if (this.inputValue == '') {
+                    alert("哥们，写点啥呗！o(╥﹏╥)o");
+                    return;
+                }
+                // 增加内容
+                this.todoList.push({
+                    // 内容
+                    content: this.inputValue,
+                    // 是否完成
+                    isCompleted: false,
+                    // 是否正在编辑
+                    isEditing: false
+                })
+                // 清空内容
+                this.inputValue = '';
+            },
+            // 根据索引删除待办事项
+            delCurrent(index) {
+                if (confirm('你真的要这样吗？555') == true) {
+                    console.log(index);
+                    this.todoList.splice(index, 1);
+                }
+
+            },
+            // 清空数据
+            clearTodo() {
+                if (confirm('哥们，你真的想好了吗，不后悔吗!!') == true) {
+                    this.todoList = [];
+                }
+            },
+            // 进入编辑状态
+            editing(index) {
+                // 全部变为false
+                this.todoList.forEach(v => {
+                    v.isEditing = false;
+                })
+                // 修改index对应内容 的isEditing即可
+                this.todoList[index].isEditing = true;
+            },
+            // 保存修改
+            saveEdit(index) {
+                console.log('保存');
+                this.todoList[index].isEditing = false;
+                // 让顶部的文本框获得焦点
+                document.querySelector('.new-todo').focus();
+
+            },
+            // 切换筛选的内容
+            changeFilter(value){
+                // console.log(value);
+                
+                this.filter = value;
+            },
+            // 全选 反选
+            checkAll(){
+                // 获取自己的选中状态
+                this.todoList.forEach(v => {
+                    v.isCompleted = this.isCheckAll
+                })
+            },
+            // 判断是否全部选中
+            checkIsAll(){
+                let completedNum = 0;
+                // 遍历总数组
+                this.todoList.forEach(v => {
+                    // 如果已被选中
+                    if(v.isCompleted == true){
+                        completedNum++;
+                    }
+                })
+                // 循环完毕之后如果选中的个数跟总个数一致
+                if(completedNum == this.todoList.length){
+                    // 全部选中
+                    this.isCheckAll = true;
+                }else{
+                    // 没有全部选中
+                    this.isCheckAll = false;
+                }
+            }
+        },
+        // 计算属性
+        computed: {
+            unfinishedNum() {
+                let num = 0;
+                this.todoList.forEach((v, i, arr) => {
+                    if (v.isCompleted == false) {
+                        num++;
+                    }
+                });
+                return num;
+            },
+            // 根据筛选条件返回不同的数组
+            filterArr(){
+                // 全部
+                if(this.filter == 'all'){
+                    return this.todoList;
+                }
+                // 未完成
+                else if(this.filter == 'active'){
+                    let temArr = [];
+                    this.todoList.forEach(v => {
+                        if(v.isCompleted == false){
+                            temArr.push(v);
+                        }
+                    })
+                    return temArr;
+                }else{
+                    // 已完成
+                    let temArr = [];
+                    this.todoList.forEach(v => {
+                        if(v.isCompleted == true){
+                            temArr.push(v);
+                        }
+                    })
+                    return temArr;
+                }
+            }
+        }
+    })
+    console.log(app);
+
+</script>
